@@ -1,12 +1,12 @@
+// js读取cookie的方法
 function getCookie(name) {
     var r = document.cookie.match("\\b" + name + "=([^;]*)\\b");
     return r ? r[1] : undefined;
 }
 
-//保存图片验证码编号
+// 保存图片验证码编号
 var imageCodeId = "";
 
-// 使用UUID生成图片验证码编号，解决高并发问题
 function generateUUID() {
     var d = new Date().getTime();
     if(window.performance && typeof window.performance.now === "function"){
@@ -21,10 +21,12 @@ function generateUUID() {
 }
 
 function generateImageCode() {
-    // 形成图片验证码的后端地址，设置在页面中
+    // 形成图片验证码的后端地址， 设置到页面中，让浏览请求验证码图片
+    // 1. 生成图片验证码编号
     imageCodeId = generateUUID();
-    var url = "/api/v1.0/image_codes/" + imageCodeId
-    $(".image-code img").attr("src", url)
+    // 是指图片url
+    var url = "/api/v1.0/image_codes/" + imageCodeId;
+    $(".image-code img").attr("src", url);
 }
 
 function sendSMSCode() {
@@ -36,7 +38,7 @@ function sendSMSCode() {
         $("#mobile-err").show();
         $(".phonecode-a").attr("onclick", "sendSMSCode();");
         return;
-    }
+    } 
     var imageCode = $("#imagecode").val();
     if (!imageCode) {
         $("#image-code-err span").html("请填写验证码！");
@@ -109,7 +111,7 @@ $(document).ready(function() {
             $("#mobile-err span").html("请填写正确的手机号！");
             $("#mobile-err").show();
             return;
-        }
+        } 
         if (!phoneCode) {
             $("#phone-code-err span").html("请填写短信验证码！");
             $("#phone-code-err").show();

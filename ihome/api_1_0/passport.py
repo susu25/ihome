@@ -3,7 +3,7 @@
 from . import api
 from flask import request, jsonify, current_app, session
 from ihome.utils.response_code import RET
-from ihome import redis_store, db, constans
+from ihome import redis_store, db, constants
 from ihome.models import User
 from sqlalchemy.exc import IntegrityError # sqlalchemy的IntegrityError异常，表示数据库已存在该唯一值
 import re
@@ -118,7 +118,7 @@ def login():
     except Exception as e:
         current_app.logger.error(e)
     else:
-        if access_nums is not None and int(access_nums) >= constans.LOGIN_ERROR_MAX_TIMES:
+        if access_nums is not None and int(access_nums) >= constants.LOGIN_ERROR_MAX_TIMES:
             return jsonify(errno=RET.REQERR, errmsg="错误次数过多，请稍后重试")
 
     # 从数据库查询用户的数据对象
@@ -134,7 +134,7 @@ def login():
         try:
             # redis的incr可以对字符串类型的数字数据进行加以操作，如果数据不存在则初始化为1
             redis_store.incr("access_num_%s" % user_ip)
-            redis_store.expire("access_num_%s" % user_ip, constans.LOGIN_ERROR_FORBID_TIME)
+            redis_store.expire("access_num_%s" % user_ip, constants.LOGIN_ERROR_FORBID_TIME)
         except Exception as e:
             current_app.logger.error(e)
 

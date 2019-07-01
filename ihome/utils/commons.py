@@ -18,7 +18,7 @@ class ReConverter(BaseConverter):
 
 
 # 自定义登录验证装饰器
-def login_requird(view_func):
+def login_required(view_func):
     # wraps函数的作用是将warpper内层函数的属性设置为被装饰函数view_func的属性
     @functools.wraps(view_func)
     def wrapper(*args, **kwargs):
