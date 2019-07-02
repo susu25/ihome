@@ -228,6 +228,49 @@ def get_user_houses():
     return jsonify(errno=RET.OK, errmsg="OK", data={"houses": houses_list})
 
 
+@api.route("/houses/index", methods=["GET"])
+def get_house_index():
+    """获取主页幻灯片展示的房屋基本信息"""
+    # 从缓存中尝试获取数据
+    try:
+        ret = redis_store.get("home_page_data")
+    except Exception as e:
+        current_app.logger.error(e)
+        ret = None
+
+    if ret:
+        current_app.logger.info("hit house index info redis")
+        # 因为redis中保存的是json字符串，所以直接进行字符串拼接返回
+        return '{"errno":0, "errmsg":"OK", "data":%s}' % ret, 200, {"Content-Type": "application/json"}
+    else:
+        try:
+            # 查询数据库，返回房屋订单数目最多的5条数据
+            houses = House.query.order_by(House.order_count.desc()).limit(constants.HOME_PAGE_MAX_HOUSES)
+        except Exception as e:
+            current_app.logger.error(e)
+            return jsonify(errno=RET.DBERR, errmsg="查询数据失败")
+
+        if not houses:
+            return jsonify(errno=RET.NODATA, errmsg="查询无数据")
+
+        houses_list = []
+        for house in houses:
+            # 如果房屋未设置主图片，则跳过
+            if not house.index_image_url:
+                continue
+            houses_list.append(house.to_basic_dict())
+
+        # 将数据转换为json，并保存到redis缓存
+        json_houses = json.dumps(houses_list)  # "[{},{},{}]"
+        try:
+            redis_store.setex("home_page_data", constants.HOME_PAGE_DATA_REDIS_EXPIRES, json_houses)
+        except Exception as e:
+            current_app.logger.error(e)
+
+        return '{"errno":0, "errmsg":"OK", "data":%s}' % json_houses, 200, {"Content-Type": "application/json"}
+
+
+
 @api.route("/houses/<int:house_id>", methods=["GET"])
 def get_house_detail(house_id):
     """获取房屋详情"""

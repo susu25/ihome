@@ -163,5 +163,10 @@ def check_login():
 @api.route("/session", methods=["DELETE"])
 def logout():
     """登出"""
+    # flask的session默认和cookie一起存在浏览器，我们自定义session为redis存储
+    # flask_wtf的csrf_token是从session中获取的，为避免清除session后报错
+    # 清除后只保留csrf_token
+    csrf_token = session.get("csrf_token")
     session.clear()
+    session["csrf_token"] = csrf_token
     return jsonify(errno=RET.OK, errmsg="OK")
